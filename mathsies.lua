@@ -117,7 +117,6 @@ local function int(a, b, f, n, i, ...)
 		arg[i] = v
 		sum = sum + f(unpack(arg)) * (b - a) / n
 	end
-	print(i, n, sum)
 	return sum
 end
 
