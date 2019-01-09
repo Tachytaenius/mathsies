@@ -1,5 +1,6 @@
 local metadata = {
 	name = "Mathsies",
+	description = "Deterministic maths functions for LuaJIT.",
 	version = "0.1.0",
 	author = "Tachytaenius",
 	license = [[
@@ -18,6 +19,7 @@ local metadata = {
 -- TODO: Logarithms
 
 local tau = 6.28318530717958647692
+local phi = 1.61803398874989484820
 local sqrt, abs, floor, ceil, min, max, huge = math.sqrt, math.abs, math.floor, math.ceil, math.min, math.max, math.huge
 
 local function sin(x)
@@ -140,6 +142,7 @@ return {
 	metadata = metadata,
 	
 	tau = tau,
+	phi = phi,
 	pi = tau / 2, -- LuaJIT will optimise "tau / 2" in code, so choose whichever you find personally gratifying. I use tau in this library.
 	sin = sin,
 	asin = asin,
