@@ -16,7 +16,7 @@ local metadata = {
 	]]
 }
 
--- TODO: Logarithms
+-- TODO: Logarithms, exponentiation
 
 local tau = 6.28318530717958647692
 local phi = 1.61803398874989484820
@@ -126,7 +126,7 @@ local function tri(x)
 	return abs((x-tau/4)%tau-tau/2)/(tau/4)-1
 end
 
-local function finite(x)
+local function real(x)
 	return x == x and abs(x) ~= huge
 end
 
@@ -136,6 +136,10 @@ end
 
 local function isInfinite(x)
 	return abs(x) == huge
+end
+
+local function clamp(lower, x, upper)
+	return max(0, min(x, upper))
 end
 
 return {
@@ -169,7 +173,10 @@ return {
 	min = min,
 	huge = huge,
 	tri = tri,
-	finite = finite,
+	real = real,
+	isNan = isNan,
+	isInfinite = isInfinite,
+	clamp = clamp,
 	
 	-- non-deterministic but faster, for use in graphics
 	ndCos = math.cos,
