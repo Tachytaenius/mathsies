@@ -139,7 +139,7 @@ local function isInfinite(x)
 end
 
 local function clamp(lower, x, upper)
-	return max(0, min(x, upper))
+	return max(lower, min(x, upper))
 end
 
 return {
