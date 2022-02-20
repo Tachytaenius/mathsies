@@ -1,6 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 1
+-- Version 2
 
 local ffi = require("ffi")
 
@@ -283,7 +283,7 @@ do -- vec2
 		)
 	end
 	
-	local detRotate function detRotate(v, a)
+	local function detRotate(v, a)
 		local x, y = v.x, v.y
 		return rawnew(
 			x * detcos(a) - y * detsin(a),
@@ -615,7 +615,7 @@ do -- quat
 		return normalise(new(axis.x * s, axis.y * s, axis.z * s, c))
 	end
 
-	local detFromAxisAngle function detFromAxisAngle(v)
+	local function detFromAxisAngle(v)
 		local angle = #v
 		if angle == 0 then return rawnew(0, 0, 0, 1) end
 		local axis = v / angle
@@ -708,7 +708,7 @@ do -- mat4
 	end
 	
 	-- The deterministic maths is really for cross-platform identical gamestate reproduction from inputs, but... might as well use it here (where it's used for output).
-	local detperspective function detperspective(aspect, vfov, far, near)
+	local function detperspective(aspect, vfov, far, near)
 		return rawnew(
 			1/(aspect*dettan(vfov/2)), 0, 0, 0,
 			0, 1/dettan(vfov/2), 0, 0,
