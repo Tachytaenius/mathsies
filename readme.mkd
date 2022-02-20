@@ -1,2 +1,0 @@
-Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT.
-It's by Tachytaenius.
