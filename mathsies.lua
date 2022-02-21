@@ -1,6 +1,8 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 2
+-- Version 3
+
+-- TODO: Tests?
 
 local ffi = require("ffi")
 
@@ -698,7 +700,26 @@ do -- mat4
 	local tan = math.tan
 	local dettan = detmath.tan
 	
-	local function perspective(aspect, vfov, far, near)
+	local function perspectiveLeftHanded(aspect, vfov, far, near)
+		return rawnew(
+			1/(aspect*tan(vfov/2)), 0, 0, 0,
+			0, 1/tan(vfov/2), 0, 0,
+			0, 0, (far+near)/(far-near), 2*(near+far)/(near-far),
+			0, 0, 1, 0
+		)
+	end
+	
+	-- The deterministic maths is really for cross-platform identical gamestate reproduction from inputs, but... might as well use it here (where it's used for output).
+	local function detperspectiveLeftHanded(aspect, vfov, far, near)
+		return rawnew(
+			1/(aspect*dettan(vfov/2)), 0, 0, 0,
+			0, 1/dettan(vfov/2), 0, 0,
+			0, 0, (far+near)/(far-near), 2*(near+far)/(near-far),
+			0, 0, 1, 0
+		)
+	end
+	
+	local function perspectiveRightHanded(aspect, vfov, far, near)
 		return rawnew(
 			1/(aspect*tan(vfov/2)), 0, 0, 0,
 			0, 1/tan(vfov/2), 0, 0,
@@ -707,8 +728,7 @@ do -- mat4
 		)
 	end
 	
-	-- The deterministic maths is really for cross-platform identical gamestate reproduction from inputs, but... might as well use it here (where it's used for output).
-	local function detperspective(aspect, vfov, far, near)
+	local function detperspectiveRightHanded(aspect, vfov, far, near)
 		return rawnew(
 			1/(aspect*dettan(vfov/2)), 0, 0, 0,
 			0, 1/dettan(vfov/2), 0, 0,
@@ -837,7 +857,10 @@ do -- mat4
 	
 	mat4 = setmetatable({
 		new = new,
-		perspective = perspective,
+		perspectiveLeftHanded = perspectiveLeftHanded,
+		detperspectiveLeftHanded = detperspectiveLeftHanded,
+		perspectiveRightHanded = perspectiveRightHanded,
+		detperspectiveRightHanded = detperspectiveRightHanded,
 		translate = translate,
 		rotate = rotate,
 		scale = scale,
