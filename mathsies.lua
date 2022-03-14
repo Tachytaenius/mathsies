@@ -1,10 +1,11 @@
--- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
+-- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for Lua(JIT), as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 4
+-- Version 5
 
--- TODO: Tests?
+-- TODO: Tests
+-- TODO: What about that function with the huge error magnification?
 -- TODO: Revise function order
--- TODO: Check for unwanted trailing whitespaces or empty lines that should have indents
+-- TODO: Shader sending functions for LÖVE
 
 local ffi = require("ffi")
 
@@ -12,11 +13,11 @@ local detmath, vec2, vec3, quat, mat4
 
 do -- detmath
 	-- Getting the same results from functions cross-platform
-
+	
 	local tau = 6.28318530717958647692 -- Pi is also provided, of course :-)
 	local e = 2.71828182845904523536
 	local abs, floor, sqrt, modf, frexp, ldexp, huge = math.abs, math.floor, math.sqrt, math.modf, math.frexp, math.ldexp, math.huge
-
+	
 	local getRoundingMode
 	do
 		local modes = {
@@ -61,7 +62,7 @@ do -- detmath
 			end
 		end
 	end
-
+	
 	-- x raised to an integer is not deterministic
 	local function intPow(x, n) -- Exponentiation by squaring
 		if n == 0 then
@@ -82,14 +83,14 @@ do -- detmath
 		end
 		return x * y
 	end
-
+	
 	local function exp(x)
 		local xint, xfract = modf(x)
 		local exint = intPow(e, xint)
 		local exfract = 1 + xfract + (xfract*xfract / 2) + (xfract*xfract*xfract / 6) + (xfract*xfract*xfract*xfract / 24) -- for n = 0, 4 sum xfract^n/n!
 		return exint * exfract -- e ^ (xint + xfract)
 	end
-
+	
 	local log
 	do
 		local powerTable = { -- 1+2^-i
@@ -117,7 +118,7 @@ do -- detmath
 			return sum + ln2 * (xexp - 1)
 		end
 	end
-
+	
 	-- NOTE: Pretty big error magnification... :-/
 	local function pow(x, y)
 		local yint, yfract = modf(y)
@@ -125,70 +126,70 @@ do -- detmath
 		local xyfract = exp(log(x)*yfract)
 		return xyint * xyfract -- x ^ (yint + yfract)
 	end
-
+	
 	local function sin(x)
 		local over = floor(x / (tau / 2)) % 2 == 0 -- Get sign of sin(x)
 		x = tau/4 - x % (tau/2) -- Shift x into domain of approximation
 		local absolute = 1 - (20 * x*x) / (4 * x*x + tau*tau) -- https://www.desmos.com/calculator/o6gy67kqpg (should help to visualise what's going on)
 		return over and absolute or -absolute
 	end
-
+	
 	local function cos(x)
 		local over = floor((tau/4 - x) / (tau / 2)) % 2 == 0
 		x = tau/4 - (tau/4 - x) % (tau/2)
 		local absolute = 1 - (20 * x*x) / (4 * x*x + tau*tau)
 		return over and absolute or -absolute
 	end
-
+	
 	local function tan(x)
 		return sin(x)/cos(x)
 	end
-
+	
 	local function asin(x)
 		local positiveX, x = x > 0, abs(x)
 		local resultForAbsoluteX = tau/4 - sqrt(tau*tau * (1 - x)) / (2 * sqrt(x + 4))
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX
 	end
-
+	
 	local function acos(x)
 		local positiveX, x = x > 0, abs(x)
 		local resultForAbsoluteX = sqrt(tau*tau * (1 - x)) / (2 * sqrt(x + 4)) -- Only approximates acos(x) when x > 0
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX + tau/2
 	end
-
+	
 	local function atan(x)
 		x = x / sqrt(1 + x*x)
 		local positiveX, x = x > 0, abs(x)
 		local resultForAbsoluteX = tau/4 - sqrt(tau*tau * (1 - x)) / (2 * sqrt(x + 4))
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX
 	end
-
+	
 	local function arg(x, y)
 		local theta = atan(y/x)
 		theta = x == 0 and tau/4 * y / abs(y) or x < 0 and theta + tau/2 or theta
 		return theta % tau -- The argument of complex number x+yi
 	end
-
+	
 	-- Personally discouraged as I believe that, though the transition from atan to atan2 makes sense, the definition of the arctangent doesn't automatically make sense with two arguments
 	local function atan2(y, x)
 		return arg(x, y)
 	end
-
+	
 	local function sinh(x)
 		local ex = exp(x)
 		return (ex - 1/ex) / 2
 	end
-
+	
 	local function cosh(x)
 		local ex = exp(x)
 		return (ex + 1/ex) / 2
 	end
-
+	
 	local function tanh(x)
 		local ex = exp(x)
 		return (ex - 1/ex) / (ex + 1/ex)
 	end
-
+	
 	detmath = {
 		getRoundingMode = getRoundingMode,
 		
