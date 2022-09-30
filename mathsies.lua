@@ -1,6 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for Lua(JIT), as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 5
+-- Version 6
 
 -- TODO: Tests
 -- TODO: What about that function with the huge error magnification?
@@ -222,7 +222,7 @@ end
 do -- vec2
 	ffi.cdef([=[
 		typedef struct {
-			float x, y;
+			double x, y;
 		} vec2;
 	]=])
 	
@@ -388,7 +388,7 @@ end
 do -- vec3
 	ffi.cdef([=[
 		typedef struct {
-			float x, y, z;
+			double x, y, z;
 		} vec3;
 	]=])
 	
@@ -562,7 +562,7 @@ end
 do -- quat
 	ffi.cdef([=[
 		typedef struct {
-			float x, y, z, w;
+			double x, y, z, w;
 		} quat;
 	]=])
 	
@@ -699,7 +699,7 @@ end
 do -- mat4
 	ffi.cdef([=[
 		typedef struct {
-			float _00, _01, _02, _03, _10, _11, _12, _13, _20, _21, _22, _23, _30, _31, _32, _33;
+			double _00, _01, _02, _03, _10, _11, _12, _13, _20, _21, _22, _23, _30, _31, _32, _33;
 		} mat4;
 	]=])
 	
