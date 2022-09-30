@@ -1,6 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for Lua(JIT), as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 6
+-- Version 7
 
 -- TODO: Tests
 -- TODO: What about that function with the huge error magnification?
@@ -728,7 +728,7 @@ do -- mat4
 	end
 	
 	-- The deterministic maths is really for cross-platform identical gamestate reproduction from inputs, but... might as well use it here (where it's used for output).
-	local function detperspectiveLeftHanded(aspect, vfov, far, near)
+	local function detPerspectiveLeftHanded(aspect, vfov, far, near)
 		return rawnew(
 			1/(aspect*dettan(vfov/2)), 0, 0, 0,
 			0, 1/dettan(vfov/2), 0, 0,
@@ -746,7 +746,7 @@ do -- mat4
 		)
 	end
 	
-	local function detperspectiveRightHanded(aspect, vfov, far, near)
+	local function detPerspectiveRightHanded(aspect, vfov, far, near)
 		return rawnew(
 			1/(aspect*dettan(vfov/2)), 0, 0, 0,
 			0, 1/dettan(vfov/2), 0, 0,
@@ -888,9 +888,9 @@ do -- mat4
 	mat4 = setmetatable({
 		new = new,
 		perspectiveLeftHanded = perspectiveLeftHanded,
-		detperspectiveLeftHanded = detperspectiveLeftHanded,
+		detPerspectiveLeftHanded = detPerspectiveLeftHanded,
 		perspectiveRightHanded = perspectiveRightHanded,
-		detperspectiveRightHanded = detperspectiveRightHanded,
+		detPerspectiveRightHanded = detPerspectiveRightHanded,
 		translate = translate,
 		rotate = rotate,
 		scale = scale,
