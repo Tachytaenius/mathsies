@@ -1,6 +1,6 @@
--- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for Lua(JIT), as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
+-- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 7
+-- Version 8
 
 -- TODO: Tests
 -- TODO: What about that function with the huge error magnification?
@@ -165,6 +165,9 @@ do -- detmath
 	end
 	
 	local function arg(x, y)
+		if x == 0 and y == 0 then
+			return 0
+		end
 		local theta = atan(y/x)
 		theta = x == 0 and tau/4 * y / abs(y) or x < 0 and theta + tau/2 or theta
 		return theta % tau -- The argument of complex number x+yi

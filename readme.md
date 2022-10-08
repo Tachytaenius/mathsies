@@ -32,8 +32,10 @@ Supplies Lua implementations of functions that may not give the same results on 
 - `acos(x)`: Returns the arccosine of `x` in radians.
 - `atan(x)`: Returns the arctangent of `x` in radians.
 - `arg(x, y)`: Returns the argument of the complex number `x + yi` in radians.
+	Returns 0 when `x` and `y` both equate to 0, regardless as to the sign of the floats.
 	Equivalent to `atan2(y, x)`.
 - `atan2(y, x)`: Returns the "atan2" of the coordinates `x, y` in radians.
+	Returns 0 when `x` and `y` both equate to 0, regardless as to the sign of the floats.
 	Equivalent to `arg(x, y)`.
 - `sinh(x)`: Returns the hyperbolic sine of x.
 - `cosh(x)`: Returns the hyperbolic cosine of x.
