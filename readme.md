@@ -46,13 +46,35 @@ Supplies Lua implementations of functions that may not give the same results on 
 
 Supplies functionality for 2-dimensional vectors. Has deterministic versions of its non-deterministic functions.
 
+#### Types
+
+`vec2`: A 2-dimensional vector.
+Supports addition, subtraction, negation, multiplication, division, modulo, equality testing, length, and tostring.
+Operations create and return a new vector.
+Has fields `x` and `y`.
+
 #### Functions
 
-TODO
+- `length(a)`: Returns the length of vector `a`.
+- `length2(a)`: Returns the square of the length of vector `a`, faster than `length(a)`.
+- `distance(a, b)`: Returns the distance between vectors `a` and `b`.
+- `distance2(a, b)`: Returns the square of the distance between `a` and `b`, faster than `distance(a, b)`.
+- `dot(a, b)`: Returns the dot product of vectors `a` and `b`.
+- `normalise(a)`: Returns `a`, normalised.
+- `normalize(a)`: Alias for `normalise(a)`.
+- `reflect(incident, normal)`: Reflect a vector.
+- `refract(incident, normal, eta)`: Refract a vector.
+- `rotate(v, a)`: Rotate vector `v` by angle `a` in radians.
+- `detRotate(v, a)`: Rotate vector `v` by angle `a` in radians, uses `detmath` sine and cosine for determinism.
+- `components(v)`: Returns `v.x, v.y`.
+- `clone(v)`: Creates a new vector identical to `v`.
 
 ### `vec3`
 
 Supplies functionality for 3-dimensional vectors. Has deterministic versions of its non-deterministic functions.
+Supports addition, subtraction, negation, multiplication, division, modulo, equality testing, length, and tostring.
+Operations create and return a new vector.
+Has fields `x`, `y`, and `z`.
 
 #### Functions
 
