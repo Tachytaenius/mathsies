@@ -22,6 +22,7 @@ Supplies Lua implementations of functions that may not give the same results on 
 	Should be specified and checked against for a game's input-based replay files.
 - `exp(x)`: Returns `e` raised to the power of `x`.
 - `pow(x, y)`: Returns `x` to the power of `y`.
+	Currently has terrible error magnification.
 - `intPow(x, n)`: Returns `x` raised to the power of `n` where `n` is an integer.
 	This function exists because the IEEE 754 standard does not define exponentiation to an integer power as deterministic.
 - `log(x)`: Returns the natural logarithm of `x`.
