@@ -45,6 +45,7 @@ Supplies Lua implementations of functions that may not give the same results on 
 ### `vec2`
 
 Supplies functionality for 2-dimensional vectors. Has deterministic versions of its non-deterministic functions.
+Calling the module is equivalent to calling its `new` function.
 
 #### Types
 
@@ -55,6 +56,7 @@ Has fields `x` and `y`.
 
 #### Functions
 
+- `new(x, y`): Creates a new `vec2` with values `x` and `y`.
 - `length(a)`: Returns the length of vector `a`.
 - `length2(a)`: Returns the square of the length of vector `a`, faster than `length(a)`.
 - `distance(a, b)`: Returns the distance between vectors `a` and `b`.
