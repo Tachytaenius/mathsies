@@ -72,6 +72,8 @@ Calling the module is equivalent to calling its `new` function.
 - `refract(incident, normal, eta)`: Refract a `vec2`.
 - `rotate(v, a)`: Rotate `vec2` `v` by angle `a` in radians.
 - `detRotate(v, a)`: Deterministic version of `rotate(v, a)`.
+- `fromAngle(a)`: Create a new `vec` from angle `a` in radians.
+- `detFromAngle(a)`: Deterministic version of `fromAngle(a)`.
 - `components(v)`: Returns `v.x, v.y`.
 - `clone(v)`: Creates a new `vec2` identical to `v`.
 
@@ -142,6 +144,7 @@ Calling the module iss equivalent to calling its `new` function.
 #### Types
 
 - `mat4`: A 4x4 matrix type.
+	Supports multiplication, equality testing, and `tostring`.
 	Has fields `_00`,  `_01`,  `_02`,  `_03`,  `_10`,  `_11`,  `_12`,  `_13`,  `_20`,  `_21`,  `_22`,  `_23`,  `_30`,  `_31`,  `_32`, and `_33`.
 	The underscores are there because you can't have a field name that starts with a number.
 	The second character is the x position of the component and the third character is the y position of the component.

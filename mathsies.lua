@@ -1,11 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 8
-
--- TODO: Tests
--- TODO: What about that function with the huge error magnification?
--- TODO: Revise function order
--- TODO: Shader sending functions for LÖVE
+-- Version 9
 
 local ffi = require("ffi")
 
@@ -46,7 +41,6 @@ do -- detmath
 			octuple = -262142
 		}
 		
-		-- TODO: Test for all configurations
 		function getRoundingMode(type, noDenormals)
 			local small = ldexp(1, (noDenormals and normalSmallExponents or denormalSmallExponents)[type or "double"])
 			
@@ -119,7 +113,6 @@ do -- detmath
 		end
 	end
 	
-	-- NOTE: Pretty big error magnification... :-/
 	local function pow(x, y)
 		local yint, yfract = modf(y)
 		local xyint = intPow(x, yint)
@@ -214,11 +207,7 @@ do -- detmath
 		atan2 = atan2,
 		sinh = sinh,
 		cosh = cosh,
-		tanh = tanh,
-		-- TODO:
-		asinh = asinh,
-		acosh = acosh,
-		atanh = atanh
+		tanh = tanh
 	}
 end
 
@@ -239,15 +228,15 @@ do -- vec2
 	end
 	
 	local sqrt, sin, cos = math.sqrt, math.sin, math.cos
-	local detsin, detcos = detmath.sin, detmath.cos
+	local detSin, detCos = detmath.sin, detmath.cos
 	
-	local function length(a)
-		local x, y = a.x, a.y
+	local function length(v)
+		local x, y = v.x, v.y
 		return sqrt(x * x + y * y)
 	end
 	
-	local function length2(a)
-		local x, y = a.x, a.y
+	local function length2(v)
+		local x, y = v.x, v.y
 		return x * x + y * y
 	end
 	
@@ -265,8 +254,8 @@ do -- vec2
 		return a.x * b.x + a.y * b.y
 	end
 	
-	local function normalise(a)
-		return a/length(a)
+	local function normalise(v)
+		return v/length(v)
 	end
 	
 	local function reflect(incident, normal)
@@ -294,9 +283,17 @@ do -- vec2
 	local function detRotate(v, a)
 		local x, y = v.x, v.y
 		return rawnew(
-			x * detcos(a) - y * detsin(a),
-			y * detcos(a) + x * detsin(a)
+			x * detCos(a) - y * detSin(a),
+			y * detCos(a) + x * detSin(a)
 		)
+	end
+	
+	local function fromAngle(a)
+		return rawnew(cos(a), sin(a))
+	end
+	
+	local function detFromAngle(a)
+		return rawnew(detCos(a), detSin(a))
 	end
 	
 	local function components(v)
@@ -326,8 +323,8 @@ do -- vec2
 				return rawnew(a.x - b.x, a.y - b.y)
 			end
 		end,
-		__unm = function(a)
-			return rawnew(-a.x, -a.y)
+		__unm = function(v)
+			return rawnew(-v.x, -v.y)
 		end,
 		__mul = function(a, b)
 			if type(a) == "number" then
@@ -361,8 +358,8 @@ do -- vec2
 			return isVec2 and a.x == b.x and a.y == b.y
 		end,
 		__len = length,
-		__tostring = function(a)
-			return string.format("vec2(%f, %f)", a.x, a.y)
+		__tostring = function(v)
+			return string.format("vec2(%f, %f)", v.x, v.y)
 		end
 	})
 	
@@ -379,6 +376,8 @@ do -- vec2
 		refract = refract,
 		rotate = rotate,
 		detRotate = detRotate,
+		fromAngle = fromAngle,
+		detFromAngle = detFromAngle,
 		components = components,
 		clone = clone
 	}, {
@@ -406,15 +405,15 @@ do -- vec3
 	end
 	
 	local sqrt, sin, cos = math.sqrt, math.sin, math.cos
-	local detsin, detcos = detmath.sin, detmath.cos
+	local detSin, detCos = detmath.sin, detmath.cos
 	
-	local function length(a)
-		local x, y, z = a.x, a.y, a.z
+	local function length(v)
+		local x, y, z = v.x, v.y, v.z
 		return sqrt(x * x + y * y + z * z)
 	end
 	
-	local function length2(a)
-		local x, y, z = a.x, a.y, a.z
+	local function length2(v)
+		local x, y, z = v.x, v.y, v.z
 		return x * x + y * y + z * z
 	end
 	
@@ -436,8 +435,8 @@ do -- vec3
 		return rawnew(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
 	end
 	
-	local function normalise(a)
-		return a/length(a)
+	local function normalise(v)
+		return v/length(v)
 	end
 	
 	local function reflect(incident, normal)
@@ -467,7 +466,7 @@ do -- vec3
 	end
 	
 	local function detFromAngles(theta, phi)
-		local st, sp, ct, cp = detsin(theta), detsin(phi), detcos(theta), detcos(phi)
+		local st, sp, ct, cp = detSin(theta), detSin(phi), detCos(theta), detCos(phi)
 		return rawnew(st*sp,ct,st*cp)
 	end
 	
@@ -498,8 +497,8 @@ do -- vec3
 				return rawnew(a.x - b.x, a.y - b.y, a.z - b.z)
 			end
 		end,
-		__unm = function(a)
-			return rawnew(-a.x, -a.y, -a.z)
+		__unm = function(v)
+			return rawnew(-v.x, -v.y, -v.z)
 		end,
 		__mul = function(a, b)
 			if type(a) == "number" then
@@ -533,8 +532,8 @@ do -- vec3
 			return isVec3 and a.x == b.x and a.y == b.y and a.z == b.z
 		end,
 		__len = length,
-		__tostring = function(a)
-			return string.format("vec3(%f, %f, %f)", a.x, a.y, a.z)
+		__tostring = function(v)
+			return string.format("vec3(%f, %f, %f)", v.x, v.y, v.z)
 		end
 	})
 	
@@ -585,7 +584,7 @@ do -- quat
 	end
 	
 	local sqrt, sin, cos, acos = math.sqrt, math.sin, math.cos, math.acos
-	local detsin, detcos, detacos = detmath.sin, detmath.cos, detmath.acos
+	local detSin, detCos, detAcos = detmath.sin, detmath.cos, detmath.acos
 	
 	local function length(q)
 		local x, y, z, w = q.x, q.y, q.z, q.w
@@ -619,10 +618,10 @@ do -- quat
 		if a == b then return a end
 		
 		local cosHalfTheta = dot(a, b)
-		local halfTheta = acos(cosHalfTheta)
+		local halfTheta = detAcos(cosHalfTheta)
 		local sinHalfTheta = sqrt(1 - cosHalfTheta*cosHalfTheta)
 		
-		return a * (detsin((1 - i) * halfTheta) / sinHalfTheta) + b * (detsin(i * halfTheta) / sinHalfTheta)
+		return a * (detSin((1 - i) * halfTheta) / sinHalfTheta) + b * (detSin(i * halfTheta) / sinHalfTheta)
 	end
 	
 	local function fromAxisAngle(v)
@@ -637,7 +636,7 @@ do -- quat
 		local angle = #v
 		if angle == 0 then return rawnew(0, 0, 0, 1) end
 		local axis = v / angle
-		local s, c = detsin(angle / 2), detcos(angle / 2)
+		local s, c = detSin(angle / 2), detCos(angle / 2)
 		return normalise(new(axis.x * s, axis.y * s, axis.z * s, c))
 	end
 	
@@ -650,8 +649,8 @@ do -- quat
 	end
 	
 	ffi.metatype("quat", {
-		__unm = function(a)
-			return rawnew(-a.x, -a.y, -a.z, -a.w)
+		__unm = function(q)
+			return rawnew(-q.x, -q.y, -q.z, -q.w)
 		end,
 		__mul = function(a, b)
 			local isQuat = type(b) == "cdata" and ffi_istype("quat", b)
@@ -674,8 +673,8 @@ do -- quat
 			return isQuat and a.x == b.x and a.y == b.y and a.z == b.z and a.w == b.w
 		end,
 		__len = length,
-		__tostring = function(a)
-			return string.format("quat(%f, %f, %f, %f)", a.x, a.y, a.z, a.w)
+		__tostring = function(q)
+			return string.format("quat(%f, %f, %f, %f)", q.x, q.y, q.z, q.w)
 		end
 	})
 	
@@ -719,7 +718,7 @@ do -- mat4
 	end
 	
 	local tan = math.tan
-	local dettan = detmath.tan
+	local detTan = detmath.tan
 	
 	local function perspectiveLeftHanded(aspect, vfov, far, near)
 		return rawnew(
@@ -733,8 +732,8 @@ do -- mat4
 	-- The deterministic maths is really for cross-platform identical gamestate reproduction from inputs, but... might as well use it here (where it's used for output).
 	local function detPerspectiveLeftHanded(aspect, vfov, far, near)
 		return rawnew(
-			1/(aspect*dettan(vfov/2)), 0, 0, 0,
-			0, 1/dettan(vfov/2), 0, 0,
+			1/(aspect*detTan(vfov/2)), 0, 0, 0,
+			0, 1/detTan(vfov/2), 0, 0,
 			0, 0, (far+near)/(far-near), 2*(near+far)/(near-far),
 			0, 0, 1, 0
 		)
@@ -751,8 +750,8 @@ do -- mat4
 	
 	local function detPerspectiveRightHanded(aspect, vfov, far, near)
 		return rawnew(
-			1/(aspect*dettan(vfov/2)), 0, 0, 0,
-			0, 1/dettan(vfov/2), 0, 0,
+			1/(aspect*detTan(vfov/2)), 0, 0, 0,
+			0, 1/detTan(vfov/2), 0, 0,
 			0, 0, (near+far)/(near-far), 2*(near+far)/(near-far),
 			0, 0, -1, 0
 		)
@@ -883,8 +882,8 @@ do -- mat4
 			end
 			return false
 		end,
-		__tostring = function(a)
-			return string.format("mat4(%f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f)", mat4.components(a))
+		__tostring = function(m)
+			return string.format("mat4(%f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f)", mat4.components(m))
 		end
 	})
 	
