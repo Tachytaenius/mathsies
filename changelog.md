@@ -1,5 +1,13 @@
 # Changelog
 
+Doesn't record changes in the readme.
+
+## Version 10
+
+- Removed `detmath.arg(x, y)`.
+- Made `detmath.atan2(y, x)` return angle in the range [-tau/2, tau/2].
+- Added `vec2.toAngle(v)` and `vec2.detToAngle(v)`.
+
 ## Version 9
 
 - Cleaned up the comments in the code, moving them to GitHub issues.

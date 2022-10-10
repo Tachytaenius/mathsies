@@ -1,6 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 9
+-- Version 10
 
 local ffi = require("ffi")
 
@@ -157,18 +157,15 @@ do -- detmath
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX
 	end
 	
-	local function arg(x, y)
+	-- The transition from atan to atan2 makes sense, but the actual definition of the arctangent doesn't automatically make sense with two arguments
+	local function atan2(y, x)
 		if x == 0 and y == 0 then
 			return 0
 		end
 		local theta = atan(y/x)
 		theta = x == 0 and tau/4 * y / abs(y) or x < 0 and theta + tau/2 or theta
-		return theta % tau -- The argument of complex number x+yi
-	end
-	
-	-- Personally discouraged as I believe that, though the transition from atan to atan2 makes sense, the definition of the arctangent doesn't automatically make sense with two arguments
-	local function atan2(y, x)
-		return arg(x, y)
+		theta = theta > tau / 2 and theta - tau or theta -- NOTE: This line was added after the above line to change the output range so simplification may be possible
+		return theta
 	end
 	
 	local function sinh(x)
@@ -227,8 +224,8 @@ do -- vec2
 		return rawnew(x, y)
 	end
 	
-	local sqrt, sin, cos = math.sqrt, math.sin, math.cos
-	local detSin, detCos = detmath.sin, detmath.cos
+	local sqrt, sin, cos, atan2 = math.sqrt, math.sin, math.cos, math.atan2
+	local detSin, detCos, detAtan2 = detmath.sin, detmath.cos, detmath.atan2
 	
 	local function length(v)
 		local x, y = v.x, v.y
@@ -294,6 +291,14 @@ do -- vec2
 	
 	local function detFromAngle(a)
 		return rawnew(detCos(a), detSin(a))
+	end
+	
+	local function toAngle(v)
+		return atan2(v.y, v.x)
+	end
+	
+	local function detToAngle(v)
+		return detAtan2(v.y, v.x)
 	end
 	
 	local function components(v)
@@ -378,6 +383,8 @@ do -- vec2
 		detRotate = detRotate,
 		fromAngle = fromAngle,
 		detFromAngle = detFromAngle,
+		toAngle = toAngle,
+		detToAngle = detToAngle,
 		components = components,
 		clone = clone
 	}, {

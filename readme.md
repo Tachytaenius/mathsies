@@ -5,7 +5,8 @@ By Tachytaenius.
 
 ## Notes
 
-Operations create and return new types, only changing the fields of a type (like `v.x = 3`) doesn't.
+- Operations create and return new types, only changing the fields of a type (like `v.x = 3`) doesn't.
+- The deterministic functions will be slower and less accurate than whatever your system provides.
 
 ## Modules
 
@@ -36,12 +37,9 @@ Supplies Lua implementations of functions that may not give the same results on 
 - `asin(x)`: Returns the arcsine of `x` in radians.
 - `acos(x)`: Returns the arccosine of `x` in radians.
 - `atan(x)`: Returns the arctangent of `x` in radians.
-- `arg(x, y)`: Returns the argument of the complex number `x + yi` in radians.
-	Returns 0 when `x` and `y` both equate to 0, regardless as to the sign of the floats.
-	Equivalent to `atan2(y, x)`.
 - `atan2(y, x)`: Returns the "atan2" of the coordinates `x, y` in radians.
 	Returns 0 when `x` and `y` both equate to 0, regardless as to the sign of the floats.
-	Equivalent to `arg(x, y)`.
+	Outputs in the range -tau/2 to tau/2.
 - `sinh(x)`: Returns the hyperbolic sine of `x`.
 - `cosh(x)`: Returns the hyperbolic cosine of `x`.
 - `tanh(x)`: Returns the hyperbolic tangent of `x`.
@@ -74,6 +72,8 @@ Calling the module is equivalent to calling its `new` function.
 - `detRotate(v, a)`: Deterministic version of `rotate(v, a)`.
 - `fromAngle(a)`: Create a new `vec` from angle `a` in radians.
 - `detFromAngle(a)`: Deterministic version of `fromAngle(a)`.
+- `toAngle(v)`: Returns `atan2(v.y, v.x)`, in the range 0 to tau.
+- `detToAngle(v)`: Deterministic version of `toAngle(v)`.
 - `components(v)`: Returns `v.x, v.y`.
 - `clone(v)`: Creates a new `vec2` identical to `v`.
 
