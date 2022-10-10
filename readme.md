@@ -44,13 +44,14 @@ Supplies Lua implementations of functions that may not give the same results on 
 
 ### `vec2`
 
-Supplies functionality for 2-dimensional vectors. Has deterministic versions of its non-deterministic functions.
+Supplies functionality for 2-dimensional vectors.
+Has deterministic versions of its non-deterministic functions.
 Calling the module is equivalent to calling its `new` function.
 
 #### Types
 
-`vec2`: A 2-dimensional vector.
-Supports addition, subtraction, negation, multiplication, division, modulo, equality testing, length, and tostring.
+- `vec2`: A 2-dimensional vector type.
+Supports addition, subtraction, negation, multiplication, division, modulo, equality testing, length, and `tostring`.
 Operations create and return a new vector.
 Has fields `x` and `y`.
 
@@ -73,8 +74,13 @@ Has fields `x` and `y`.
 
 ### `vec3`
 
-Supplies functionality for 3-dimensional vectors. Has deterministic versions of its non-deterministic functions.
-Supports addition, subtraction, negation, multiplication, division, modulo, equality testing, length, and tostring.
+Supplies functionality for 3-dimensional vectors. 
+Has deterministic versions of its non-deterministic functions.
+Calling the module is equivalent to calling its `new` function.
+
+#### Types
+
+- `vec3`: Supports addition, subtraction, negation, multiplication, division, modulo, equality testing, length, and tostring.
 Operations create and return a new vector.
 Has fields `x`, `y`, and `z`.
 
@@ -84,7 +90,12 @@ TODO
 
 ### `quat`
 
-Supplies functionality for quaternions. Has deterministic versions of its non-deterministic functions.
+Supplies functionality for quaternions.
+Has deterministic versions of its non-deterministic functions.
+
+#### Types
+
+TODO
 
 #### Functions
 
@@ -92,7 +103,12 @@ TODO
 
 ### `mat4`
 
-Supplies functionality for 4x4 matrices. Has deterministic versions of its non-deterministic functions.
+Supplies functionality for 4x4 matrices.
+Has deterministic versions of its non-deterministic functions.
+
+#### Types
+
+TODO
 
 #### Functions
 
