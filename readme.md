@@ -152,11 +152,11 @@ Calling the module iss equivalent to calling its `new` function.
 #### Functions
 
 - `new(...)`: Creates a new `mat4` with components listed in the 16 arguments in the same order as fields.
-- `perspectiveLeftHanded(aspect, vfov, far, near)`: Creates a left-handed perspective projection `mat4` from aspect ratio `aspect`, vertical field of view `vfov` (in radians), far plane distance `far` and near plane distance `near`.
-- `detPerspectiveLeftHanded(aspect, vfov, far, near)`: Deterministic version of `perspectiveLeftHanded(aspect, vfov, far, near)`.
+- `perspectiveLeftHanded(aspect, verticalFov, far, near)`: Creates a left-handed perspective projection `mat4` from aspect ratio `aspect` (width / height), vertical field of view `verticalFov` (in radians), far plane distance `far` and near plane distance `near`.
+- `detPerspectiveLeftHanded(aspect, verticalFov, far, near)`: Deterministic version of `perspectiveLeftHanded(aspect, verticalFov, far, near)`.
 	Not recommended for use in actual 3D rendering.
-- `perspectiveRightHanded(aspect, vfov, far, near)`: Creates a right-handed perspective projection `mat4` from aspect ratio `aspect`, vertical field of view `vfov` (in radians), far plane distance `far` and near plane distance `near`.
-- `detPerspectiveRightHanded(aspect, vfov, far, near)`: Deterministic version of `perspectiveRightHanded(aspect, vfov, far, near)`.
+- `perspectiveRightHanded(aspect, verticalFov, far, near)`: Creates a right-handed perspective projection `mat4` from aspect ratio `aspect` (width / height), vertical field of view `verticalFov` (in radians), far plane distance `far` and near plane distance `near`.
+- `detPerspectiveRightHanded(aspect, verticalFov, far, near)`: Deterministic version of `perspectiveRightHanded(aspect, verticalFov, far, near)`.
 	Not recommended for use in actual 3D rendering.
 - `translate(v)`: Creates a translation `mat4` from `vec3` `v`.
 - `rotate(q)`: Creates a rotation `mat4` from `quat` `q`.

@@ -2,6 +2,11 @@
 
 Doesn't record changes in the readme.
 
+## Version 11
+
+- Fixed projection matrices
+- Removed empty indented lines
+
 ## Version 10
 
 - Removed `detmath.arg(x, y)`.

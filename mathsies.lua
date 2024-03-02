@@ -1,6 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 10
+-- Version 11
 
 local ffi = require("ffi")
 
@@ -8,11 +8,11 @@ local detmath, vec2, vec3, quat, mat4
 
 do -- detmath
 	-- Getting the same results from functions cross-platform
-	
+
 	local tau = 6.28318530717958647692 -- Pi is also provided, of course :-)
 	local e = 2.71828182845904523536
 	local abs, floor, sqrt, modf, frexp, ldexp, huge = math.abs, math.floor, math.sqrt, math.modf, math.frexp, math.ldexp, math.huge
-	
+
 	local getRoundingMode
 	do
 		local modes = {
@@ -22,9 +22,9 @@ do -- detmath
 			ceiling = {2, 3, -1, -2},
 			floor = {1, 2, -2, -3}
 		}
-		
+
 		local input = {1.5, 2.5, -1.5, -2.5}
-		
+
 		local denormalSmallExponents = {
 			half = -24,
 			single = -149,
@@ -32,7 +32,7 @@ do -- detmath
 			quadruple = -16494,
 			octuple = -262378
 		}
-		
+
 		local normalSmallExponents = {
 			half = -14,
 			single = -126,
@@ -40,10 +40,10 @@ do -- detmath
 			quadruple = -16382,
 			octuple = -262142
 		}
-		
+
 		function getRoundingMode(type, noDenormals)
 			local small = ldexp(1, (noDenormals and normalSmallExponents or denormalSmallExponents)[type or "double"])
-			
+
 			for name, results in pairs(modes) do
 				local this = true
 				for i = 1, 4 do
@@ -56,7 +56,7 @@ do -- detmath
 			end
 		end
 	end
-	
+
 	-- x raised to an integer is not deterministic
 	local function intPow(x, n) -- Exponentiation by squaring
 		if n == 0 then
@@ -77,14 +77,14 @@ do -- detmath
 		end
 		return x * y
 	end
-	
+
 	local function exp(x)
 		local xint, xfract = modf(x)
 		local exint = intPow(e, xint)
 		local exfract = 1 + xfract + (xfract*xfract / 2) + (xfract*xfract*xfract / 6) + (xfract*xfract*xfract*xfract / 24) -- for n = 0, 4 sum xfract^n/n!
 		return exint * exfract -- e ^ (xint + xfract)
 	end
-	
+
 	local log
 	do
 		local powerTable = { -- 1+2^-i
@@ -112,51 +112,51 @@ do -- detmath
 			return sum + ln2 * (xexp - 1)
 		end
 	end
-	
+
 	local function pow(x, y)
 		local yint, yfract = modf(y)
 		local xyint = intPow(x, yint)
 		local xyfract = exp(log(x)*yfract)
 		return xyint * xyfract -- x ^ (yint + yfract)
 	end
-	
+
 	local function sin(x)
 		local over = floor(x / (tau / 2)) % 2 == 0 -- Get sign of sin(x)
 		x = tau/4 - x % (tau/2) -- Shift x into domain of approximation
 		local absolute = 1 - (20 * x*x) / (4 * x*x + tau*tau) -- https://www.desmos.com/calculator/o6gy67kqpg (should help to visualise what's going on)
 		return over and absolute or -absolute
 	end
-	
+
 	local function cos(x)
 		local over = floor((tau/4 - x) / (tau / 2)) % 2 == 0
 		x = tau/4 - (tau/4 - x) % (tau/2)
 		local absolute = 1 - (20 * x*x) / (4 * x*x + tau*tau)
 		return over and absolute or -absolute
 	end
-	
+
 	local function tan(x)
 		return sin(x)/cos(x)
 	end
-	
+
 	local function asin(x)
 		local positiveX, x = x > 0, abs(x)
 		local resultForAbsoluteX = tau/4 - sqrt(tau*tau * (1 - x)) / (2 * sqrt(x + 4))
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX
 	end
-	
+
 	local function acos(x)
 		local positiveX, x = x > 0, abs(x)
 		local resultForAbsoluteX = sqrt(tau*tau * (1 - x)) / (2 * sqrt(x + 4)) -- Only approximates acos(x) when x > 0
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX + tau/2
 	end
-	
+
 	local function atan(x)
 		x = x / sqrt(1 + x*x)
 		local positiveX, x = x > 0, abs(x)
 		local resultForAbsoluteX = tau/4 - sqrt(tau*tau * (1 - x)) / (2 * sqrt(x + 4))
 		return positiveX and resultForAbsoluteX or -resultForAbsoluteX
 	end
-	
+
 	-- The transition from atan to atan2 makes sense, but the actual definition of the arctangent doesn't automatically make sense with two arguments
 	local function atan2(y, x)
 		if x == 0 and y == 0 then
@@ -167,29 +167,29 @@ do -- detmath
 		theta = theta > tau / 2 and theta - tau or theta -- NOTE: This line was added after the above line to change the output range so simplification may be possible
 		return theta
 	end
-	
+
 	local function sinh(x)
 		local ex = exp(x)
 		return (ex - 1/ex) / 2
 	end
-	
+
 	local function cosh(x)
 		local ex = exp(x)
 		return (ex + 1/ex) / 2
 	end
-	
+
 	local function tanh(x)
 		local ex = exp(x)
 		return (ex - 1/ex) / (ex + 1/ex)
 	end
-	
+
 	detmath = {
 		getRoundingMode = getRoundingMode,
-		
+
 		tau = tau,
 		pi = tau / 2, -- Choose whichever you find personally gratifying. I use tau in this library but it's up to you
 		e = e,
-		
+
 		exp = exp,
 		pow = pow,
 		intPow = intPow,
@@ -214,51 +214,51 @@ do -- vec2
 			double x, y;
 		} vec2;
 	]=])
-	
+
 	local ffi_istype = ffi.istype
-	
+
 	local rawnew = ffi.typeof("vec2")
 	local function new(x, y)
 		x = x or 0
 		y = y or x
 		return rawnew(x, y)
 	end
-	
+
 	local sqrt, sin, cos, atan2 = math.sqrt, math.sin, math.cos, math.atan2
 	local detSin, detCos, detAtan2 = detmath.sin, detmath.cos, detmath.atan2
-	
+
 	local function length(v)
 		local x, y = v.x, v.y
 		return sqrt(x * x + y * y)
 	end
-	
+
 	local function length2(v)
 		local x, y = v.x, v.y
 		return x * x + y * y
 	end
-	
+
 	local function distance(a, b)
 		local x, y = b.x - a.x, b.y - a.y
 		return sqrt(x * x + y * y)
 	end
-	
+
 	local function distance2(a, b)
 		local x, y = b.x - a.x, b.y - a.y
 		return x * x + y * y
 	end
-	
+
 	local function dot(a, b)
 		return a.x * b.x + a.y * b.y
 	end
-	
+
 	local function normalise(v)
 		return v/length(v)
 	end
-	
+
 	local function reflect(incident, normal)
 		return incident - 2 * dot(normal, incident) * normal
 	end
-	
+
 	local function refract(incident, normal, eta)
 		local ndi = dot(normal, incident)
 		local k = 1 - eta * eta * (1 - ndi * ndi)
@@ -268,7 +268,7 @@ do -- vec2
 			return eta * incident - (eta * ndi + sqrt(k)) * normal
 		end
 	end
-	
+
 	local function rotate(v, a)
 		local x, y = v.x, v.y
 		return rawnew(
@@ -276,7 +276,7 @@ do -- vec2
 			y * cos(a) + x * sin(a)
 		)
 	end
-	
+
 	local function detRotate(v, a)
 		local x, y = v.x, v.y
 		return rawnew(
@@ -284,31 +284,31 @@ do -- vec2
 			y * detCos(a) + x * detSin(a)
 		)
 	end
-	
+
 	local function fromAngle(a)
 		return rawnew(cos(a), sin(a))
 	end
-	
+
 	local function detFromAngle(a)
 		return rawnew(detCos(a), detSin(a))
 	end
-	
+
 	local function toAngle(v)
 		return atan2(v.y, v.x)
 	end
-	
+
 	local function detToAngle(v)
 		return detAtan2(v.y, v.x)
 	end
-	
+
 	local function components(v)
 		return v.x, v.y
 	end
-	
+
 	local function clone(v)
 		return rawnew(v.x, v.y)
 	end
-	
+
 	ffi.metatype("vec2", {
 		__add = function(a, b)
 			if type(a) == "number" then
@@ -367,7 +367,7 @@ do -- vec2
 			return string.format("vec2(%f, %f)", v.x, v.y)
 		end
 	})
-	
+
 	vec2 = setmetatable({
 		new = new,
 		length = length,
@@ -400,9 +400,9 @@ do -- vec3
 			double x, y, z;
 		} vec3;
 	]=])
-	
+
 	local ffi_istype = ffi.istype
-	
+
 	local rawnew = ffi.typeof("vec3")
 	local function new(x, y, z)
 		x = x or 0
@@ -410,46 +410,46 @@ do -- vec3
 		z = z or y
 		return rawnew(x, y, z)
 	end
-	
+
 	local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 	local detSin, detCos = detmath.sin, detmath.cos
-	
+
 	local function length(v)
 		local x, y, z = v.x, v.y, v.z
 		return sqrt(x * x + y * y + z * z)
 	end
-	
+
 	local function length2(v)
 		local x, y, z = v.x, v.y, v.z
 		return x * x + y * y + z * z
 	end
-	
+
 	local function distance(a, b)
 		local x, y, z = b.x - a.x, b.y - a.y, b.z - a.z
 		return sqrt(x * x + y * y + z * z)
 	end
-	
+
 	local function distance2(a, b)
 		local x, y, z = b.x - a.x, b.y - a.y, b.z - a.z
 		return x * x + y * y + z * z
 	end
-	
+
 	local function dot(a, b)
 		return a.x * b.x + a.y * b.y + a.z * b.z
 	end
-	
+
 	local function cross(a, b)
 		return rawnew(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
 	end
-	
+
 	local function normalise(v)
 		return v/length(v)
 	end
-	
+
 	local function reflect(incident, normal)
 		return incident - 2 * dot(normal, incident) * normal
 	end
-	
+
 	local function refract(incident, normal, eta)
 		local ndi = dot(normal, incident)
 		local k = 1 - eta * eta * (1 - ndi * ndi)
@@ -459,32 +459,32 @@ do -- vec3
 			return eta * incident - (eta * ndi + sqrt(k)) * normal
 		end
 	end
-	
+
 	local function rotate(v, q)
 		local qxyz = new(q.x, q.y, q.z)
 		local uv = cross(qxyz, v)
 		local uuv = cross(qxyz, uv)
 		return v + ((uv * q.w) + uuv) * 2
 	end
-	
+
 	local function fromAngles(theta, phi)
 		local st, sp, ct, cp = sin(theta), sin(phi), cos(theta), cos(phi)
 		return rawnew(st*sp,ct,st*cp)
 	end
-	
+
 	local function detFromAngles(theta, phi)
 		local st, sp, ct, cp = detSin(theta), detSin(phi), detCos(theta), detCos(phi)
 		return rawnew(st*sp,ct,st*cp)
 	end
-	
+
 	local function components(v)
 		return v.x, v.y, v.z
 	end
-	
+
 	local function clone(v)
 		return rawnew(v.x, v.y, v.z)
 	end
-	
+
 	ffi.metatype("vec3", {
 		__add = function(a, b)
 			if type(a) == "number" then
@@ -543,7 +543,7 @@ do -- vec3
 			return string.format("vec3(%f, %f, %f)", v.x, v.y, v.z)
 		end
 	})
-	
+
 	vec3 = setmetatable({
 		new = new,
 		length = length,
@@ -574,9 +574,9 @@ do -- quat
 			double x, y, z, w;
 		} quat;
 	]=])
-	
+
 	local ffi_istype = ffi.istype
-	
+
 	local rawnew = ffi.typeof("quat")
 	local function new(x, y, z, w)
 		if x and y and z then
@@ -589,48 +589,48 @@ do -- quat
 			return rawnew(0, 0, 0, 1)
 		end
 	end
-	
+
 	local sqrt, sin, cos, acos = math.sqrt, math.sin, math.cos, math.acos
 	local detSin, detCos, detAcos = detmath.sin, detmath.cos, detmath.acos
-	
+
 	local function length(q)
 		local x, y, z, w = q.x, q.y, q.z, q.w
 		return sqrt(x * x + y * y + z * z + w * w)
 	end
-	
+
 	local function normalise(q)
 		local len = #q
 		return rawnew(q.x / len, q.y / len, q.z / len, q.w / len)
 	end
-	
+
 	local function inverse(q)
 		return rawnew(-q.x, -q.y, -q.z, q.w)
 	end
-	
+
 	local function dot(a, b)
 		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
 	end
-	
+
 	local function slerp(a, b, i)
 		if a == b then return a end
-		
+
 		local cosHalfTheta = dot(a, b)
 		local halfTheta = acos(cosHalfTheta)
 		local sinHalfTheta = sqrt(1 - cosHalfTheta^2)
-		
+
 		return a * (sin((1 - i) * halfTheta) / sinHalfTheta) + b * (sin(i * halfTheta) / sinHalfTheta)
 	end
-	
+
 	local function detSlerp(a, b, i)
 		if a == b then return a end
-		
+
 		local cosHalfTheta = dot(a, b)
 		local halfTheta = detAcos(cosHalfTheta)
 		local sinHalfTheta = sqrt(1 - cosHalfTheta*cosHalfTheta)
-		
+
 		return a * (detSin((1 - i) * halfTheta) / sinHalfTheta) + b * (detSin(i * halfTheta) / sinHalfTheta)
 	end
-	
+
 	local function fromAxisAngle(v)
 		local angle = #v
 		if angle == 0 then return rawnew(0, 0, 0, 1) end
@@ -638,7 +638,7 @@ do -- quat
 		local s, c = sin(angle / 2), cos(angle / 2)
 		return normalise(new(axis.x * s, axis.y * s, axis.z * s, c))
 	end
-	
+
 	local function detFromAxisAngle(v)
 		local angle = #v
 		if angle == 0 then return rawnew(0, 0, 0, 1) end
@@ -646,15 +646,15 @@ do -- quat
 		local s, c = detSin(angle / 2), detCos(angle / 2)
 		return normalise(new(axis.x * s, axis.y * s, axis.z * s, c))
 	end
-	
+
 	local function components(q)
 		return q.x, q.y, q.z, q.w
 	end
-	
+
 	local function clone(q)
 		return rawnew(q.x, q.y, q.z, q.w)
 	end
-	
+
 	ffi.metatype("quat", {
 		__unm = function(q)
 			return rawnew(-q.x, -q.y, -q.z, -q.w)
@@ -684,7 +684,7 @@ do -- quat
 			return string.format("quat(%f, %f, %f, %f)", q.x, q.y, q.z, q.w)
 		end
 	})
-	
+
 	quat = setmetatable({
 		new = new,
 		length = length,
@@ -711,9 +711,9 @@ do -- mat4
 			double _00, _01, _02, _03, _10, _11, _12, _13, _20, _21, _22, _23, _30, _31, _32, _33;
 		} mat4;
 	]=])
-	
+
 	local ffi_istype = ffi.istype
-	
+
 	local rawnew = ffi.typeof("mat4")
 	local function new(a,b,c,d, e,f,g,h, i,j,k,l, m,n,o,p)
 		a = a or 1
@@ -723,47 +723,51 @@ do -- mat4
 			return rawnew(a,b,c,d, e,f,g,h, i,j,k,l, m,n,o,p)
 		end
 	end
-	
+
 	local tan = math.tan
 	local detTan = detmath.tan
-	
-	local function perspectiveLeftHanded(aspect, vfov, far, near)
+
+	local function perspectiveLeftHanded(aspect, verticalFov, far, near)
+		-- aspect is width / height
 		return rawnew(
-			1/(aspect*tan(vfov/2)), 0, 0, 0,
-			0, 1/tan(vfov/2), 0, 0,
-			0, 0, (far+near)/(far-near), 2*(near+far)/(near-far),
+			1/(aspect*tan(verticalFov/2)), 0, 0, 0,
+			0, 1/tan(verticalFov/2), 0, 0,
+			0, 0, (far+near)/(far-near), 2*(near*far)/(near-far),
 			0, 0, 1, 0
 		)
 	end
-	
+
 	-- The deterministic maths is really for cross-platform identical gamestate reproduction from inputs, but... might as well use it here (where it's used for output).
-	local function detPerspectiveLeftHanded(aspect, vfov, far, near)
+	local function detPerspectiveLeftHanded(aspect, verticalFov, far, near)
+		-- aspect is width / height
 		return rawnew(
-			1/(aspect*detTan(vfov/2)), 0, 0, 0,
-			0, 1/detTan(vfov/2), 0, 0,
-			0, 0, (far+near)/(far-near), 2*(near+far)/(near-far),
+			1/(aspect*detTan(verticalFov/2)), 0, 0, 0,
+			0, 1/detTan(verticalFov/2), 0, 0,
+			0, 0, (far+near)/(far-near), 2*(near*far)/(near-far),
 			0, 0, 1, 0
 		)
 	end
-	
-	local function perspectiveRightHanded(aspect, vfov, far, near)
+
+	local function perspectiveRightHanded(aspect, verticalFov, far, near)
+		-- aspect is width / height
 		return rawnew(
-			1/(aspect*tan(vfov/2)), 0, 0, 0,
-			0, 1/tan(vfov/2), 0, 0,
-			0, 0, (near+far)/(near-far), 2*(near+far)/(near-far),
+			1/(aspect*tan(verticalFov/2)), 0, 0, 0,
+			0, 1/tan(verticalFov/2), 0, 0,
+			0, 0, -(far+near)/(far-near), 2*(near*far)/(near-far),
 			0, 0, -1, 0
 		)
 	end
-	
-	local function detPerspectiveRightHanded(aspect, vfov, far, near)
+
+	local function detPerspectiveRightHanded(aspect, verticalFov, far, near)
+		-- aspect is width / height
 		return rawnew(
-			1/(aspect*detTan(vfov/2)), 0, 0, 0,
-			0, 1/detTan(vfov/2), 0, 0,
-			0, 0, (near+far)/(near-far), 2*(near+far)/(near-far),
+			1/(aspect*detTan(verticalFov/2)), 0, 0, 0,
+			0, 1/detTan(verticalFov/2), 0, 0,
+			0, 0, -(far+near)/(far-near), 2*(near*far)/(near-far),
 			0, 0, -1, 0
 		)
 	end
-	
+
 	local function translate(v)
 		return rawnew(
 			1, 0, 0, v.x,
@@ -772,7 +776,7 @@ do -- mat4
 			0, 0, 0, 1
 		)
 	end
-	
+
 	local function rotate(q)
 		local x, y, z, w = q.x, q.y, q.z, q.w
 		return rawnew(
@@ -782,7 +786,7 @@ do -- mat4
 			0, 0, 0, 1
 		  )
 	end
-	
+
 	local function scale(v)
 		return rawnew(
 			v.x, 0, 0, 0,
@@ -791,7 +795,7 @@ do -- mat4
 			0, 0, 0, 1
 		)
 	end
-	
+
 	local function transform(t, r, s)
 		if type(s) == "number" then
 			s = vec3(s)
@@ -800,7 +804,7 @@ do -- mat4
 		end
 		return translate(t) * rotate(r) * scale(s)
 	end
-	
+
 	local function camera(t, r, s)
 		if type(s) == "number" then
 			s = vec3(s)
@@ -809,15 +813,15 @@ do -- mat4
 		end
 		return scale(1/s) * rotate(quat.inverse(r)) * translate(-t)
 	end
-	
+
 	local function components(m)
 		return m._00,m._01,m._02,m._03, m._10,m._11,m._12,m._13, m._20,m._21,m._22,m._23, m._30,m._31,m._32,m._33
 	end
-	
+
 	local function clone(m)
 		return rawnew(m._00,m._01,m._02,m._03, m._10,m._11,m._12,m._13, m._20,m._21,m._22,m._23, m._30,m._31,m._32,m._33)
 	end
-	
+
 	local function inverse(m)
 		return rawnew(
 			 m._11 * m._22 * m._33 - m._11 * m._23 * m._32 - m._21 * m._12 * m._33 + m._21 * m._13 * m._32 + m._31 * m._12 * m._23 - m._31 * m._13 * m._22,
@@ -838,11 +842,11 @@ do -- mat4
 			 m._00 * m._11 * m._22 - m._00 * m._12 * m._21 - m._10 * m._01 * m._22 + m._10 * m._02 * m._21 + m._20 * m._01 * m._12 - m._20 * m._02 * m._11
 		)
 	end
-	
+
 	local function transpose(m)
 		return rawnew(m._00,m._10,m._20,m._30, m._01,m._11,m._21,m._31, m._02,m._12,m._22,m._32, m._03,m._13,m._23,m._33)
 	end
-	
+
 	ffi.metatype("mat4", {
 		__mul = function(a, b)
 			if type(b) == "number" then
@@ -893,7 +897,7 @@ do -- mat4
 			return string.format("mat4(%f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f)", mat4.components(m))
 		end
 	})
-	
+
 	mat4 = setmetatable({
 		new = new,
 		perspectiveLeftHanded = perspectiveLeftHanded,
