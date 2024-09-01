@@ -2,6 +2,10 @@
 
 Doesn't record changes in the readme.
 
+# Version 12
+
+- Fixed mat4 equality tests
+
 ## Version 11
 
 - Fixed projection matrices

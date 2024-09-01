@@ -1,6 +1,6 @@
 -- Mathsies provides deterministic (if your machine is compliant with IEEE-754) versions of generic mathematical functions for LuaJIT, as well as quaternions, 2 and 3-dimensional vectors and 4x4 matrices.
 -- By Tachytaenius.
--- Version 11
+-- Version 12
 
 local ffi = require("ffi")
 
@@ -883,15 +883,26 @@ do -- mat4
 		end,
 		__eq = function(a, b)
 			local isMat4 = ffi_istype("mat4", b)
-			if isMat4 then
-				for i = 1, 16 do
-					if a[i] ~= b[i] then
-						return false
-					end
-				end
-				return true
+			if not isMat4 then
+				return false
 			end
-			return false
+			return -- String concat would be slow
+				a._00 == b._00 and
+				a._01 == b._01 and
+				a._02 == b._02 and
+				a._03 == b._03 and
+				a._10 == b._10 and
+				a._11 == b._11 and
+				a._12 == b._12 and
+				a._13 == b._13 and
+				a._20 == b._20 and
+				a._21 == b._21 and
+				a._22 == b._22 and
+				a._23 == b._23 and
+				a._30 == b._30 and
+				a._31 == b._31 and
+				a._32 == b._32 and
+				a._33 == b._33
 		end,
 		__tostring = function(m)
 			return string.format("mat4(%f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f, %f,%f,%f,%f)", mat4.components(m))
